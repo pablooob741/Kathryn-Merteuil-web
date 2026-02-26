@@ -640,10 +640,23 @@ Este sitio no está afiliado, patrocinado ni aprobado por dichos titulares. El u
 
 
     <!-- SCRIPT DEL CHAT (AÑADIDO) -->
+<div id="kathryn-chat">
+    <div id="kathryn-messages" style="height:300px; overflow-y:auto; border:1px solid #444; padding:10px; margin-bottom:10px;"></div>
+
+    <!-- Indicador de escritura -->
+    <div id="kathryn-typing" style="display:none; color:#c59f5d; font-style:italic; margin:5px 0;">
+        Kathryn is writing…
+    </div>
+
+    <input id="kathryn-input" type="text" placeholder="Say something to Kathryn…" style="width:80%; padding:8px;">
+    <button id="kathryn-send" style="padding:8px 12px;">Send</button>
+</div>
+
 <script>
     const messagesDiv = document.getElementById("kathryn-messages");
     const input = document.getElementById("kathryn-input");
     const sendBtn = document.getElementById("kathryn-send");
+    const typingDiv = document.getElementById("kathryn-typing");
 
     let history = [];
 
@@ -654,14 +667,24 @@ Este sitio no está afiliado, patrocinado ni aprobado por dichos titulares. El u
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
     }
 
+    function showTyping() {
+        typingDiv.style.display = "block";
+    }
+
+    function hideTyping() {
+        typingDiv.style.display = "none";
+    }
+
     async function sendMessage() {
         const userText = input.value.trim();
         if (!userText) return;
 
         addMessage("You", userText);
-
         history.push({ role: "user", content: userText });
         input.value = "";
+
+        // Mostrar indicador de escritura
+        showTyping();
 
         try {
             const response = await fetch("/api/chat", {
@@ -671,14 +694,16 @@ Este sitio no está afiliado, patrocinado ni aprobado por dichos titulares. El u
             });
 
             const data = await response.json();
-
             const reply = data.reply || "…";
 
-            addMessage("Kathryn", reply);
+            // Ocultar indicador antes de mostrar la respuesta
+            hideTyping();
 
+            addMessage("Kathryn", reply);
             history.push({ role: "assistant", content: reply });
 
         } catch (err) {
+            hideTyping();
             addMessage("System", "Error connecting to server.");
         }
     }
@@ -715,6 +740,7 @@ Este sitio no está afiliado, patrocinado ni aprobado por dichos titulares. El u
 	</body>
 
 </html>
+
 
 
 
