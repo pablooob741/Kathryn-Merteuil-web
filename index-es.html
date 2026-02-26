@@ -630,7 +630,38 @@ Este sitio no está afiliado, patrocinado ni aprobado por dichos titulares. El u
 </script>
 		
 		
-	
+<script>
+document.getElementById("kathryn-send").addEventListener("click", sendMessage);
+document.getElementById("kathryn-input").addEventListener("keypress", function(e) {
+  if (e.key === "Enter") sendMessage();
+});
+
+async function sendMessage() {
+  const input = document.getElementById("kathryn-input");
+  const messages = document.getElementById("kathryn-messages");
+  const text = input.value.trim();
+  if (!text) return;
+
+  // Mostrar mensaje del usuario
+  messages.innerHTML += `<p><strong style="color:#c59f5d;">You:</strong> ${text}</p>`;
+  input.value = "";
+  messages.scrollTop = messages.scrollHeight;
+
+  // Llamar a la Function
+  const response = await fetch("/.netlify/functions/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message: text })
+  });
+
+  const data = await response.json();
+
+  // Mostrar respuesta de Kathryn
+  messages.innerHTML += `<p><strong style="color:#c59f5d;">Kathryn:</strong> ${data.reply}</p>`;
+  messages.scrollTop = messages.scrollHeight;
+}
+</script>
+		
 
 <script>
   const langMenu = document.querySelector('.idiomas');
@@ -646,4 +677,5 @@ Este sitio no está afiliado, patrocinado ni aprobado por dichos titulares. El u
   });
 </script>		
 	</body>
+
 </html>
