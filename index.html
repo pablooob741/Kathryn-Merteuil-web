@@ -645,35 +645,14 @@ This site is not affiliated with, sponsored by, or approved by those rights hold
     const messagesDiv = document.getElementById("kathryn-messages");
     const input = document.getElementById("kathryn-input");
     const sendBtn = document.getElementById("kathryn-send");
-    const typingIndicator = document.getElementById("typing-indicator");
 
     let history = [];
 
-    function addMessage(role, text, typewriter = false) {
+    function addMessage(role, text) {
         const p = document.createElement("p");
-        p.innerHTML = `<strong style="color:#c59f5d;">${role}:</strong> `;
+        p.innerHTML = `<strong style="color:#c59f5d;">${role}:</strong> ${text}`;
         messagesDiv.appendChild(p);
-
-        if (!typewriter) {
-            p.innerHTML += text;
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
-            return;
-        }
-
-        let i = 0;
-
-        function type() {
-            if (i < text.length) {
-                p.innerHTML += text.charAt(i);
-                i++;
-                messagesDiv.scrollTop = messagesDiv.scrollHeight;
-                setTimeout(type, 25);
-            } else {
-                typingIndicator.style.display = "none"; // Ocultar indicador al terminar
-            }
-        }
-
-        type();
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
     }
 
     async function sendMessage() {
@@ -685,8 +664,6 @@ This site is not affiliated with, sponsored by, or approved by those rights hold
         history.push({ role: "user", content: userText });
         input.value = "";
 
-        typingIndicator.style.display = "block"; // Mostrar indicador
-
         try {
             const response = await fetch("/api/chat", {
                 method: "POST",
@@ -695,14 +672,14 @@ This site is not affiliated with, sponsored by, or approved by those rights hold
             });
 
             const data = await response.json();
+
             const reply = data.reply || "…";
 
-            addMessage("Kathryn", reply, true);
+            addMessage("Kathryn", reply);
 
             history.push({ role: "assistant", content: reply });
 
         } catch (err) {
-            typingIndicator.style.display = "none";
             addMessage("System", "Error connecting to server.");
         }
     }
@@ -741,6 +718,7 @@ This site is not affiliated with, sponsored by, or approved by those rights hold
 	</body>
 
 </html>
+
 
 
 
