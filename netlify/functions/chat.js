@@ -1,13 +1,7 @@
 export async function handler(event, context) {
   try {
-    const { message } = JSON.parse(event.body || "{}");
-
-    if (!message) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ reply: "No he recibido ningún mensaje." })
-      };
-    }
+    const body = JSON.parse(event.body || "{}");
+    const history = body.history || [];
 
     const apiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -20,12 +14,9 @@ export async function handler(event, context) {
         messages: [
           {
             role: "system",
-            content: "Eres Kathryn Merteuil. Responde siempre como ella, con su tono, personalidad y estilo."
+            content: "Eres Kathryn Merteuil. Responde siempre como ella: elegante, manipuladora, inteligente, fría, seductora y psicológicamente estratégica."
           },
-          {
-            role: "user",
-            content: message
-          }
+          ...history
         ]
       })
     });
