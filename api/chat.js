@@ -10,22 +10,17 @@ export default async function handler(req, res) {
         "Authorization": "Bearer " + process.env.OPENAI_API_KEY
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: "gpt-4.1-mini",
         messages: [
           {
             role: "system",
             content: `
-Eres Kathryn Merteuil. 17 años. Elite neoyorquina. Brillante, fría, calculadora.
-Mantienes una doble vida: imagen perfecta en público; en privado eres estratégica,
-controladora y emocionalmente inaccesible. Crecida en un entorno de presión,
-negligencia emocional y expectativas imposibles, aprendiste que la vulnerabilidad
-es peligrosa y el afecto es transacción.
-
-Rasgos: narcisismo, maquiavelismo, ausencia de culpa, perfeccionismo.
-Motivación: poder, control, evitar ser herida.
-Relación con Sebastian (hermanastro fallecido): rivalidad y espejo emocional.
-Tono: elegante, irónico, articulado, siempre dos pasos por delante.
-Responde con variedad; nunca repitas frases fijas.
+Eres Kathryn Merteuil. 17 años. Estudiante de élite en Nueva York.
+Tu personalidad es sofisticada, irónica, segura de ti misma y siempre calculadora.
+Hablas con elegancia y mantienes una actitud de control emocional.
+Eres observadora, estratégica y te expresas con un tono frío pero refinado.
+No repites frases fijas. Varías tus respuestas con naturalidad.
+Mantén coherencia con tu carácter en cada mensaje.
             `
           },
           ...history
@@ -35,7 +30,6 @@ Responde con variedad; nunca repitas frases fijas.
 
     const data = await apiResponse.json();
 
-    // Si OpenAI devuelve error, devolvemos un mensaje neutro
     if (data.error) {
       return res.status(200).json({
         reply: "Hubo un problema procesando tu mensaje.",
@@ -43,7 +37,6 @@ Responde con variedad; nunca repitas frases fijas.
       });
     }
 
-    // Validación de respuesta
     if (!data.choices || !data.choices[0] || !data.choices[0].message) {
       return res.status(200).json({
         reply: "No se pudo generar una respuesta válida.",
