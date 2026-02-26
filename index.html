@@ -661,6 +661,16 @@ This site is not affiliated with, sponsored by, or approved by those rights hold
     const messagesDiv = document.getElementById("kathryn-messages");
     const input = document.getElementById("kathryn-input");
     const sendBtn = document.getElementById("kathryn-send");
+const typingDiv = document.getElementById("kathryn-typing");
+
+function showTyping() {
+    typingDiv.style.display = "block";
+}
+
+function hideTyping() {
+    typingDiv.style.display = "none";
+}
+	
     const typingDiv = document.getElementById("kathryn-typing");
 
     let history = [];
@@ -747,6 +757,7 @@ This site is not affiliated with, sponsored by, or approved by those rights hold
 	</body>
 
 </html>
+
 
 
 
