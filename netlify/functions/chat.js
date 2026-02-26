@@ -32,7 +32,6 @@ export async function handler(event, context) {
 
     const data = await apiResponse.json();
 
-    // Si OpenAI devuelve error
     if (!data.choices || !data.choices[0]) {
       return {
         statusCode: 500,
