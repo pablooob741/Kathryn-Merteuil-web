@@ -1,3 +1,0 @@
-User-agent: *
-Allow: /
-Sitemap: https://kathrynmerteuil.vercel.app/sitemap.xml
