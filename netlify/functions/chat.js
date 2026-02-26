@@ -1,8 +1,15 @@
 export async function handler(event, context) {
   try {
-    const { message } = JSON.parse(event.body);
+    const { message } = JSON.parse(event.body || "{}");
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    if (!message) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ reply: "No he recibido ningún mensaje." })
+      };
+    }
+
+    const apiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -23,7 +30,18 @@ export async function handler(event, context) {
       })
     });
 
-    const data = await response.json();
+    const data = await apiResponse.json();
+
+    // Si OpenAI devuelve error
+    if (!data.choices || !data.choices[0]) {
+      return {
+        statusCode: 500,
+        body: JSON.stringify({
+          reply: "Kathryn no puede responder ahora mismo.",
+          error: data
+        })
+      };
+    }
 
     return {
       statusCode: 200,
@@ -33,7 +51,10 @@ export async function handler(event, context) {
   } catch (error) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: "Error interno" })
+      body: JSON.stringify({
+        reply: "Ha ocurrido un error inesperado.",
+        error: error.toString()
+      })
     };
   }
 }
