@@ -630,6 +630,9 @@ Ce site n’est ni affilié, ni sponsorisé, ni approuvé par ces détenteurs de
 
 
 
+
+
+
 <script>
 let conversationHistory = [];
 
@@ -647,7 +650,7 @@ async function sendMessage() {
 
   if (!text) return;
 
-  // Guardar mensaje del usuario en memoria
+  // Guardar mensaje del usuario
   conversationHistory.push({ role: "user", content: text });
 
   // Mostrar mensaje del usuario
@@ -665,37 +668,36 @@ async function sendMessage() {
   messages.scrollTop = messages.scrollHeight;
 
   try {
-    // Llamada a la Function de Netlify
     const response = await fetch("/.netlify/functions/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        history: conversationHistory
-      })
+      body: JSON.stringify({ history: conversationHistory })
     });
 
     const data = await response.json();
 
-    // Eliminar "Kathryn is writing..."
+    // Eliminar indicador
     const typingElement = document.getElementById(typingId);
     if (typingElement) typingElement.remove();
 
-    if (data.error) {
+    // Validar respuesta
+    if (!data || !data.reply || typeof data.reply !== "string") {
       messages.innerHTML += `
-        <p style="color:red;"><strong>Error:</strong> ${JSON.stringify(data.error)}</p>
+        <p style="color:red;"><strong>Kathryn:</strong> No voy a dignificar eso con una respuesta.</p>
       `;
-    } else {
-      // Guardar respuesta de Kathryn en memoria
-      conversationHistory.push({ role: "assistant", content: data.reply });
-
-      // Crear contenedor para el mensaje de Kathryn
-      const kathrynMsg = document.createElement("p");
-      kathrynMsg.innerHTML = `<strong style="color:#c59f5d;">Kathryn:</strong> <span id="kathryn-text"></span>`;
-      messages.appendChild(kathrynMsg);
-
-      // Efecto máquina de escribir
-      typeWriterEffect(data.reply, document.getElementById("kathryn-text"));
+      return;
     }
+
+    // Guardar respuesta en memoria
+    conversationHistory.push({ role: "assistant", content: data.reply });
+
+    // Crear contenedor para typing effect
+    const kathrynMsg = document.createElement("p");
+    kathrynMsg.innerHTML = `<strong style="color:#c59f5d;">Kathryn:</strong> <span id="kathryn-text"></span>`;
+    messages.appendChild(kathrynMsg);
+
+    // Efecto máquina de escribir
+    typeWriterEffect(data.reply, document.getElementById("kathryn-text"));
 
     messages.scrollTop = messages.scrollHeight;
 
@@ -711,6 +713,11 @@ async function sendMessage() {
 
 // --- EFECTO MÁQUINA DE ESCRIBIR ---
 function typeWriterEffect(text, element, speed = 25) {
+  if (!text || typeof text !== "string") {
+    element.textContent = "…";
+    return;
+  }
+
   let i = 0;
   function type() {
     if (i < text.length) {
@@ -722,6 +729,8 @@ function typeWriterEffect(text, element, speed = 25) {
   type();
 }
 </script>
+
+		
 
 
 
@@ -744,5 +753,6 @@ function typeWriterEffect(text, element, speed = 25) {
 	</body>
 
 </html>
+
 
 
