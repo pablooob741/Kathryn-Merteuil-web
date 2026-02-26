@@ -641,54 +641,77 @@ This site is not affiliated with, sponsored by, or approved by those rights hold
 
 
     <!-- SCRIPT DEL CHAT (AÑADIDO) -->
-    <script>
-        const messagesDiv = document.getElementById("kathryn-messages");
-        const input = document.getElementById("kathryn-input");
-        const sendBtn = document.getElementById("kathryn-send");
+<script>
+    const messagesDiv = document.getElementById("kathryn-messages");
+    const input = document.getElementById("kathryn-input");
+    const sendBtn = document.getElementById("kathryn-send");
+    const typingIndicator = document.getElementById("typing-indicator");
 
-        let history = [];
+    let history = [];
 
-        function addMessage(role, text) {
-            const p = document.createElement("p");
-            p.innerHTML = `<strong style="color:#c59f5d;">${role}:</strong> ${text}`;
-            messagesDiv.appendChild(p);
+    function addMessage(role, text, typewriter = false) {
+        const p = document.createElement("p");
+        p.innerHTML = `<strong style="color:#c59f5d;">${role}:</strong> `;
+        messagesDiv.appendChild(p);
+
+        if (!typewriter) {
+            p.innerHTML += text;
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            return;
         }
 
-        async function sendMessage() {
-            const userText = input.value.trim();
-            if (!userText) return;
+        let i = 0;
 
-            addMessage("You", userText);
-
-            history.push({ role: "user", content: userText });
-            input.value = "";
-
-            try {
-                const response = await fetch("/api/chat", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ history })
-                });
-
-                const data = await response.json();
-
-                const reply = data.reply || "…";
-
-                addMessage("Kathryn", reply);
-
-                history.push({ role: "assistant", content: reply });
-
-            } catch (err) {
-                addMessage("System", "Error connecting to server.");
+        function type() {
+            if (i < text.length) {
+                p.innerHTML += text.charAt(i);
+                i++;
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                setTimeout(type, 25);
+            } else {
+                typingIndicator.style.display = "none"; // Ocultar indicador al terminar
             }
         }
 
-        sendBtn.addEventListener("click", sendMessage);
-        input.addEventListener("keypress", (e) => {
-            if (e.key === "Enter") sendMessage();
-        });
-    </script>
+        type();
+    }
+
+    async function sendMessage() {
+        const userText = input.value.trim();
+        if (!userText) return;
+
+        addMessage("You", userText);
+
+        history.push({ role: "user", content: userText });
+        input.value = "";
+
+        typingIndicator.style.display = "block"; // Mostrar indicador
+
+        try {
+            const response = await fetch("/api/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ history })
+            });
+
+            const data = await response.json();
+            const reply = data.reply || "…";
+
+            addMessage("Kathryn", reply, true);
+
+            history.push({ role: "assistant", content: reply });
+
+        } catch (err) {
+            typingIndicator.style.display = "none";
+            addMessage("System", "Error connecting to server.");
+        }
+    }
+
+    sendBtn.addEventListener("click", sendMessage);
+    input.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") sendMessage();
+    });
+</script>
 
 
 
@@ -718,6 +741,7 @@ This site is not affiliated with, sponsored by, or approved by those rights hold
 	</body>
 
 </html>
+
 
 
 
