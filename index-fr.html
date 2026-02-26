@@ -627,37 +627,96 @@ Ce site n’est ni affilié, ni sponsorisé, ni approuvé par ces détenteurs de
 </script>
 		
 		
+
+
+
 <script>
+// --- EVENTOS DEL CHAT ---
 document.getElementById("kathryn-send").addEventListener("click", sendMessage);
 document.getElementById("kathryn-input").addEventListener("keypress", function(e) {
   if (e.key === "Enter") sendMessage();
 });
 
+// --- FUNCIÓN PRINCIPAL ---
 async function sendMessage() {
   const input = document.getElementById("kathryn-input");
   const messages = document.getElementById("kathryn-messages");
   const text = input.value.trim();
+
   if (!text) return;
 
   // Mostrar mensaje del usuario
-  messages.innerHTML += `<p><strong style="color:#c59f5d;">You:</strong> ${text}</p>`;
+  messages.innerHTML += `
+    <p><strong style="color:#c59f5d;">You:</strong> ${text}</p>
+  `;
   input.value = "";
   messages.scrollTop = messages.scrollHeight;
 
-  // Llamar a la Function
-  const response = await fetch("/.netlify/functions/chat", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message: text })
-  });
-
-  const data = await response.json();
-
-  // Mostrar respuesta de Kathryn
-  messages.innerHTML += `<p><strong style="color:#c59f5d;">Kathryn:</strong> ${data.reply}</p>`;
+  // Mostrar indicador "Kathryn is writing..."
+  const typingId = "kathryn-typing";
+  messages.innerHTML += `
+    <p id="${typingId}" style="color:#777; font-style:italic;">Kathryn is writing...</p>
+  `;
   messages.scrollTop = messages.scrollHeight;
+
+  try {
+    // Llamada a la Function de Netlify
+    const response = await fetch("/.netlify/functions/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: text })
+    });
+
+    const data = await response.json();
+
+    // Eliminar "Kathryn is writing..."
+    const typingElement = document.getElementById(typingId);
+    if (typingElement) typingElement.remove();
+
+    if (data.error) {
+      messages.innerHTML += `
+        <p style="color:red;"><strong>Error:</strong> ${JSON.stringify(data.error)}</p>
+      `;
+    } else {
+      // Crear contenedor para el mensaje de Kathryn
+      const kathrynMsg = document.createElement("p");
+      kathrynMsg.innerHTML = `<strong style="color:#c59f5d;">Kathryn:</strong> <span id="kathryn-text"></span>`;
+      messages.appendChild(kathrynMsg);
+
+      // Efecto máquina de escribir
+      typeWriterEffect(data.reply, document.getElementById("kathryn-text"));
+    }
+
+    messages.scrollTop = messages.scrollHeight;
+
+  } catch (err) {
+    const typingElement = document.getElementById(typingId);
+    if (typingElement) typingElement.remove();
+
+    messages.innerHTML += `
+      <p style="color:red;"><strong>Error:</strong> ${err.toString()}</p>
+    `;
+  }
 }
-</script>	
+
+// --- EFECTO MÁQUINA DE ESCRIBIR ---
+function typeWriterEffect(text, element, speed = 25) {
+  let i = 0;
+  function type() {
+    if (i < text.length) {
+      element.textContent += text.charAt(i);
+      i++;
+      setTimeout(type, speed);
+    }
+  }
+  type();
+}
+</script>
+
+
+
+
+		
 		
 <script>
   const langMenu = document.querySelector('.idiomas');
@@ -675,3 +734,4 @@ async function sendMessage() {
 	</body>
 
 </html>
+
