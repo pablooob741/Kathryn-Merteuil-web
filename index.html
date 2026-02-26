@@ -640,102 +640,57 @@ This site is not affiliated with, sponsored by, or approved by those rights hold
 
 
 
-<script>
-let conversationHistory = [];
+    <!-- SCRIPT DEL CHAT (AÑADIDO) -->
+    <script>
+        const messagesDiv = document.getElementById("kathryn-messages");
+        const input = document.getElementById("kathryn-input");
+        const sendBtn = document.getElementById("kathryn-send");
 
-// --- EVENTOS DEL CHAT ---
-document.getElementById("kathryn-send").addEventListener("click", sendMessage);
-document.getElementById("kathryn-input").addEventListener("keypress", function(e) {
-  if (e.key === "Enter") sendMessage();
-});
+        let history = [];
 
-// --- FUNCIÓN PRINCIPAL ---
-async function sendMessage() {
-  const input = document.getElementById("kathryn-input");
-  const messages = document.getElementById("kathryn-messages");
-  const text = input.value.trim();
+        function addMessage(role, text) {
+            const p = document.createElement("p");
+            p.innerHTML = `<strong style="color:#c59f5d;">${role}:</strong> ${text}`;
+            messagesDiv.appendChild(p);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
 
-  if (!text) return;
+        async function sendMessage() {
+            const userText = input.value.trim();
+            if (!userText) return;
 
-  // Guardar mensaje del usuario
-  conversationHistory.push({ role: "user", content: text });
+            addMessage("You", userText);
 
-  // Mostrar mensaje del usuario
-  messages.innerHTML += `
-    <p><strong style="color:#c59f5d;">You:</strong> ${text}</p>
-  `;
-  input.value = "";
-  messages.scrollTop = messages.scrollHeight;
+            history.push({ role: "user", content: userText });
+            input.value = "";
 
-  // Mostrar indicador "Kathryn is writing..."
-  const typingId = "kathryn-typing";
-  messages.innerHTML += `
-    <p id="${typingId}" style="color:#777; font-style:italic;">Kathryn is writing...</p>
-  `;
-  messages.scrollTop = messages.scrollHeight;
+            try {
+                const response = await fetch("/api/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ history })
+                });
 
-  try {
-    const response = await fetch("/.netlify/functions/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ history: conversationHistory })
-    });
+                const data = await response.json();
 
-    const data = await response.json();
+                const reply = data.reply || "…";
 
-    // Eliminar indicador
-    const typingElement = document.getElementById(typingId);
-    if (typingElement) typingElement.remove();
+                addMessage("Kathryn", reply);
 
-    // Validar respuesta
-    if (!data || !data.reply || typeof data.reply !== "string") {
-      messages.innerHTML += `
-        <p style="color:red;"><strong>Kathryn:</strong> No voy a dignificar eso con una respuesta.</p>
-      `;
-      return;
-    }
+                history.push({ role: "assistant", content: reply });
 
-    // Guardar respuesta en memoria
-    conversationHistory.push({ role: "assistant", content: data.reply });
+            } catch (err) {
+                addMessage("System", "Error connecting to server.");
+            }
+        }
 
-    // Crear contenedor para typing effect
-    const kathrynMsg = document.createElement("p");
-    kathrynMsg.innerHTML = `<strong style="color:#c59f5d;">Kathryn:</strong> <span id="kathryn-text"></span>`;
-    messages.appendChild(kathrynMsg);
+        sendBtn.addEventListener("click", sendMessage);
+        input.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") sendMessage();
+        });
+    </script>
 
-    // Efecto máquina de escribir
-    typeWriterEffect(data.reply, document.getElementById("kathryn-text"));
 
-    messages.scrollTop = messages.scrollHeight;
-
-  } catch (err) {
-    const typingElement = document.getElementById(typingId);
-    if (typingElement) typingElement.remove();
-
-    messages.innerHTML += `
-      <p style="color:red;"><strong>Error:</strong> ${err.toString()}</p>
-    `;
-  }
-}
-
-// --- EFECTO MÁQUINA DE ESCRIBIR ---
-function typeWriterEffect(text, element, speed = 25) {
-  if (!text || typeof text !== "string") {
-    element.textContent = "…";
-    return;
-  }
-
-  let i = 0;
-  function type() {
-    if (i < text.length) {
-      element.textContent += text.charAt(i);
-      i++;
-      setTimeout(type, speed);
-    }
-  }
-  type();
-}
-</script>
 
 
 
@@ -763,6 +718,7 @@ function typeWriterEffect(text, element, speed = 25) {
 	</body>
 
 </html>
+
 
 
 
