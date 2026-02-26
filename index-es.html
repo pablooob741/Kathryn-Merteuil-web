@@ -658,6 +658,17 @@ Este sitio no está afiliado, patrocinado ni aprobado por dichos titulares. El u
     const messagesDiv = document.getElementById("kathryn-messages");
     const input = document.getElementById("kathryn-input");
     const sendBtn = document.getElementById("kathryn-send");
+
+	const typingDiv = document.getElementById("kathryn-typing");
+
+function showTyping() {
+    typingDiv.style.display = "block";
+}
+
+function hideTyping() {
+    typingDiv.style.display = "none";
+}
+	
     const typingDiv = document.getElementById("kathryn-typing");
 
     let history = [];
@@ -742,6 +753,7 @@ Este sitio no está afiliado, patrocinado ni aprobado por dichos titulares. El u
 	</body>
 
 </html>
+
 
 
 
