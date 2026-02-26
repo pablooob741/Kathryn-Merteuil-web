@@ -30,13 +30,14 @@ Mantén coherencia con tu carácter en cada mensaje.
 
     const data = await apiResponse.json();
 
+    // Mostrar el error real para depurar
     if (data.error) {
       return res.status(200).json({
-        reply: "Hubo un problema procesando tu mensaje.",
-        error: data.error
+        reply: "Error de OpenAI: " + JSON.stringify(data.error, null, 2)
       });
     }
 
+    // Validación de respuesta
     if (!data.choices || !data.choices[0] || !data.choices[0].message) {
       return res.status(200).json({
         reply: "No se pudo generar una respuesta válida.",
