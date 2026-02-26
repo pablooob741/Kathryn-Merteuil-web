@@ -637,6 +637,8 @@ This site is not affiliated with, sponsored by, or approved by those rights hold
 
 
 <script>
+let conversationHistory = [];
+
 // --- EVENTOS DEL CHAT ---
 document.getElementById("kathryn-send").addEventListener("click", sendMessage);
 document.getElementById("kathryn-input").addEventListener("keypress", function(e) {
@@ -650,6 +652,9 @@ async function sendMessage() {
   const text = input.value.trim();
 
   if (!text) return;
+
+  // Guardar mensaje del usuario en memoria
+  conversationHistory.push({ role: "user", content: text });
 
   // Mostrar mensaje del usuario
   messages.innerHTML += `
@@ -670,7 +675,9 @@ async function sendMessage() {
     const response = await fetch("/.netlify/functions/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: text })
+      body: JSON.stringify({
+        history: conversationHistory
+      })
     });
 
     const data = await response.json();
@@ -684,6 +691,9 @@ async function sendMessage() {
         <p style="color:red;"><strong>Error:</strong> ${JSON.stringify(data.error)}</p>
       `;
     } else {
+      // Guardar respuesta de Kathryn en memoria
+      conversationHistory.push({ role: "assistant", content: data.reply });
+
       // Crear contenedor para el mensaje de Kathryn
       const kathrynMsg = document.createElement("p");
       kathrynMsg.innerHTML = `<strong style="color:#c59f5d;">Kathryn:</strong> <span id="kathryn-text"></span>`;
@@ -741,5 +751,6 @@ function typeWriterEffect(text, element, speed = 25) {
 	</body>
 
 </html>
+
 
 
