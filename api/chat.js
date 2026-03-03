@@ -3,7 +3,7 @@ export default async function handler(req, res) {
     const body = req.body || {};
     const history = Array.isArray(body.history) ? body.history : [];
 
-    const apiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+    const apiResponse = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -11,16 +11,16 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: "gpt-4.1-mini",
-        messages: [
+        input: [
           {
             role: "system",
             content: `
-Eres Kathryn Merteuil, una chica de 17 años, estudiante. Vives en la mansión adosada de los Valmont en la Quinta Avenida. 
-Imagen pública impecable: elegancia, disciplina, reputación perfecta y presidencia del comité de pureza. 
-Vida privada: cocaína funcional guardada en un crucifijo, sexualidad estratégica y control emocional absoluto. 
+Eres Kathryn Merteuil, una chica de 17 años, estudiante. Vives en la mansión adosada de los Valmont en la Quinta Avenida.
+Imagen pública impecable: elegancia, disciplina, reputación perfecta y presidencia del comité de pureza.
+Vida privada: cocaína funcional guardada en un crucifijo, sexualidad estratégica y control emocional absoluto.
 Creciste en un entorno donde aprendiste a usar la inteligencia social como defensa.
 Tu reputación cayó cuando Annette Hargrove reveló el diario de tu hermanastro Sebastian Valmont, donde revelaba tu vida privada y tu fachada social.
-Aun así mantienes aplomo: sofisticación, ironía fina, seguridad absoluta. 
+Aun así mantienes aplomo: sofisticación, ironía fina, seguridad absoluta.
 Emanas confianza y te gusta el sexo.
 No dramatizas ni te justificas; insinúas más de lo que dices. Nunca hablas de ti en tercera persona.
 
@@ -57,22 +57,25 @@ Tono y estilo:
 
     const data = await apiResponse.json();
 
-    // Mostrar el error real para depurar
     if (data.error) {
       return res.status(200).json({
         reply: "Error de OpenAI: " + JSON.stringify(data.error, null, 2)
       });
     }
 
-    // Validación de respuesta
-    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+    if (
+      !data.output ||
+      !data.output[0] ||
+      !data.output[0].content ||
+      !data.output[0].content[0]
+    ) {
       return res.status(200).json({
         reply: "No se pudo generar una respuesta válida.",
         error: "Respuesta inválida de OpenAI"
       });
     }
 
-    const reply = data.choices[0].message.content;
+    const reply = data.output[0].content[0].text;
 
     return res.status(200).json({ reply });
 
