@@ -633,84 +633,10 @@ This site is not affiliated with, sponsored by, or approved by those rights hold
 
 
 
-  <!-- SCRIPT DEL CHAT (AÑADIDO) -->
-<div id="kathryn-chat">
-    <div id="kathryn-messages" style="height:300px; overflow-y:auto; border:1px solid #444; padding:10px; margin-bottom:10px;"></div>
-
-    <!-- Indicador de escritura -->
-    <div id="kathryn-typing" style="display:none; color:#c59f5d; font-style:italic; margin:5px 0;">
-        Kathryn is writing…
-    </div>
-
-    <input id="kathryn-input" type="text" placeholder="Say something to Kathryn…" style="width:80%; padding:8px;">
-    <button id="kathryn-send" style="padding:8px 12px;">Send</button>
-</div>
-
-<script>
-    const messagesDiv = document.getElementById("kathryn-messages");
-    const input = document.getElementById("kathryn-input");
-    const sendBtn = document.getElementById("kathryn-send");
-    const typingDiv = document.getElementById("kathryn-typing");
-
-    let history = [];
-
-    function addMessage(role, text) {
-        const p = document.createElement("p");
-        p.innerHTML = `<strong style="color:#c59f5d;">${role}:</strong> ${text}`;
-        messagesDiv.appendChild(p);
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    }
-
-    function showTyping() {
-        typingDiv.style.display = "block";
-    }
-
-    function hideTyping() {
-        typingDiv.style.display = "none";
-    }
-
-    async function sendMessage() {
-        const userText = input.value.trim();
-        if (!userText) return;
-
-        addMessage("You", userText);
-        history.push({ role: "user", content: userText });
-        input.value = "";
-
-        // Mostrar indicador de escritura
-        showTyping();
-
-        try {
-            const response = await fetch("/api/chat", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ history })
-            });
-
-            const data = await response.json();
-            const reply = data.reply || "…";
-
-            // Ocultar indicador antes de mostrar la respuesta
-            hideTyping();
-
-            addMessage("Kathryn", reply);
-            history.push({ role: "assistant", content: reply });
-
-        } catch (err) {
-            hideTyping();
-            addMessage("System", "Error connecting to server.");
-        }
-    }
-
-    sendBtn.addEventListener("click", sendMessage);
-    input.addEventListener("keypress", (e) => {
-        if (e.key === "Enter") sendMessage();
-    });
-</script>
-
 	</body>
 
 </html>
+
 
 
 
